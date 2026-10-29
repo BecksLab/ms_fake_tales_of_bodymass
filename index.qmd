@@ -28,7 +28,51 @@ abstract: |
 bibliography: references.bib
 ---
 
-## Section
-This is a simple placeholder for the manuscript's main document [@knuth84].
+- Body-size-based allometric trophic network (ATN) [@broseConsumerResourceBodySize2006] models predict interactions from consumer–resource size relationships.
+- However, body size is only one determinant of trophic interactions; other traits and ecological constraints may be important.
+- **Aim:** quantify how often body-size-based ATN models predict interactions absent from empirical metawebs, and test whether network structure can nevertheless be recovered.
+- Prediction: ATN models will generate a high proportion of forbidden interactions, even when their broad structural properties resemble those of empirical metawebs.
+
+## Template metawebs
+
+- **Great Britain:** European metaweb [@maioranoTETRAEU10Specieslevel2020a]; subsampled to mammal species checklist from the UK Mammal Society - this is because some of the links in the european metaweb are 'forbidden' due to co-occurrence limitations but could be feasible if species are treated as co-occurring. So this would have inflated the number of perceived forbidden links in the ATN. For Canada it is less of a problem since it is not constrained by co-occurrence.
+- **Canada:** probabilistic metaweb from @strydomFoodWebReconstruction2022.
+- **Body sizes:** mammalian body-mass estimates from PanTHERIA [@jonesPanTHERIASpecieslevelDatabase2009].
+- Briefly describe species matching, taxonomic harmonisation and missing-data handling.
+
+## ATN models and forbidden interactions
+
+- Generate probabilistic and binary ATN networks using body size, varying $(R_{\mathrm{opt}}), (\gamma)$ and, for binary networks, the interaction threshold.
+- For probabilistic metawebs, account for uncertainty by sampling interactions.
+- Define forbidden interactions as ATN links absent from the corresponding metaweb.
+- Quantify the percentage of ATN links that are forbidden across parameter combinations and simulation replicates.
+
+## Network structure comparison
+
+- Compare a small set of structural metrics between ATN networks and metawebs (e.g. connectance, degree distributions and nestedness, where appropriate).
+- Assess whether similar structural properties can coexist with poor recovery of specific species-level interactions.
+
+## Body-size models predict many forbidden interactions
+
+- Report the percentage of predicted ATN links absent from the metaweb.
+- Show sensitivity to $(R_{\mathrm{opt}}), (\gamma)$, and the binary interaction threshold.
+- Compare results between Great Britain and Canada.
+
+## Similar structure does not imply correct interactions
+
+- Compare structural metrics between ATN networks and metawebs.
+- Highlight any cases where structural similarity coexists with low pairwise interaction agreement.
+
+# Discussion
+
+- Body-size-based ATN models can predict interactions that are unsupported by the reference metawebs.
+- Structural similarity, if observed, does not necessarily imply recovery of the correct species-level links.
+- Discuss the limitations of body size as a sole predictor and the potential importance of additional traits and ecological constraints.
+- Note that metaweb absence is not definitive proof that an interaction is biologically impossible; results measure disagreement with the reference interaction data.
+
+# Data and code availability
+
+- Provide data sources, analysis code and processed outputs.
+
 
 # References {.unnumbered}
