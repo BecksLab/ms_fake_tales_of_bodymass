@@ -65,6 +65,7 @@
 
 
 \usepackage{longtable,booktabs,array}
+\newcounter{none} % for unnumbered tables
 \usepackage{calc} % for calculating minipage widths
 % Correct order of tables after \paragraph or \subparagraph
 \usepackage{etoolbox}
@@ -186,9 +187,13 @@
 \usepackage{bookmark}
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same}
+% fallback for those not using the hyperref driver hyperxmp:
+\makeatletter
+\@ifundefined{xmpquote}{\newcommand{\xmpquote}[1]{#1}}{}
+\makeatother
 \hypersetup{
   pdftitle={Fake tales of bodymass models},
-  pdfkeywords={food webs},
+  pdfkeywords={\xmpquote{food webs}},
   colorlinks=true,
   linkcolor={blue},
   filecolor={Maroon},
@@ -436,7 +441,7 @@ interactions}\label{similar-structure-does-not-imply-correct-interactions}
 \section*{References}\label{references}
 \addcontentsline{toc}{section}{References}
 
-\phantomsection\label{refs}
+\protect\phantomsection\label{refs}
 \begin{CSLReferences}{1}{0}
 \bibitem[\citeproctext]{ref-broseConsumerResourceBodySize2006}
 Brose, U., Jonsson, T., Berlow, E. L., Warren, P., Banasek-Richter, C.,
