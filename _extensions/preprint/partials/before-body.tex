@@ -1,0 +1,37 @@
+$if(title)$
+\maketitle
+$endif$
+
+% REDEFINE ABSTRACT TO REMOVE INDENTATION
+\renewenvironment{abstract}
+ {\small\noindent\textbf{Abstract:}}
+ {\par}
+
+$if(abstract)$
+  \begin{abstract}
+    $abstract$
+    $if(keywords)$
+      \par\bigskip
+      \noindent\textbf{Keywords:} $for(keywords)$$it$$sep$, $endfor$
+    $endif$
+  \end{abstract}
+$endif$
+
+% FORCE NEW PAGE BEFORE CONTENT
+\newpage
+
+% ==========================================================
+% BODY TEXT SETUP
+% ==========================================================
+
+% 1. Set default body style
+\linenumbers
+\doublespacing % <--- CHANGED TO DOUBLE SPACING
+
+% 2. Fix Table of Contents (Clean Mode)
+\makeatletter
+\@ifpackageloaded{etoolbox}{%
+  \pretocmd{\tableofcontents}{\nolinenumbers\singlespacing}{}{}%
+  \apptocmd{\tableofcontents}{\linenumbers\doublespacing}{}{}% 
+}{}%
+\makeatother

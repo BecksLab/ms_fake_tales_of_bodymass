@@ -1,0 +1,37 @@
+title: Generic Preprint Template
+author: Timothée Poisot
+version: 0.0.1
+contributes:
+  formats:
+    common:
+      filters:
+      shortcodes:
+        - shortcodes.lua
+      knitr:
+        opts_chunk:
+          echo: false
+    pdf:
+      documentclass: article
+      toc: false
+      colorlinks: true
+      fig-width: 6.5
+      fig-height: 4.5
+      csl: https://www.zotero.org/styles/ecology-letters
+      # PACKAGES
+      header-includes: 
+        - \usepackage[left=3cm,right=5cm,top=2cm,bottom=2cm]{geometry}
+        - \usepackage{lineno}
+        - \usepackage{setspace}
+        - \usepackage{orcidlink} 
+        - \usepackage{etoolbox}
+      template-partials:
+        - "partials/title.tex"
+        - "partials/before-body.tex"
+        - "partials/after-body.tex"
+      format-resources:
+        - te.bst
+    html:
+      number-sections: true
+      toc: true
+      theme: custom.scss
+      csl: https://www.zotero.org/styles/journal-of-institutional-and-theoretical-economics
