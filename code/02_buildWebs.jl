@@ -1,20 +1,21 @@
 using CSV
 using DataFrames
 using FoodWebTools
+using JLD2
 using ProgressMeter
 using SpeciesInteractionNetworks
 using Random
 using Statistics
 
 # --------------------------------------------------
-# Settings
+# Configuration
 # --------------------------------------------------
 
-n_runs = 100
+n_runs = 10
 Random.seed!(66)
 
-Ropt_values = collect(50.0:20.0:200.0) 
-gamma_values = collect(0.5:0.5:5.5)    
+Ropt_values = collect(50.0:20.0:200.0)
+gamma_values = collect(0.5:0.5:5.5)
 threshold_values = collect(range(0.001, 0.1; length=10))
 
 # --------------------------------------------------
@@ -28,19 +29,25 @@ can_meta = DataFrame(CSV.File("data/subset/metaweb_CAN.csv"))
 can_body = DataFrame(CSV.File("data/subset/bodysizes_CAN.csv"))
 
 locations = [
-    (name = "GB", meta = gb_meta, body = gb_body,
-     probabilistic_metaweb = false),
-    (name = "Canada", meta = can_meta, body = can_body,
-     probabilistic_metaweb = true)
+    (
+        name = "GB",
+        meta = gb_meta,
+        body = gb_body,
+        probabilistic_metaweb = false,
+    ),
+    (
+        name = "CAN",
+        meta = can_meta,
+        body = can_body,
+        probabilistic_metaweb = true,
+    ),
 ]
 
-
 # --------------------------------------------------
-# Build metaweb
+# Build metawebs
 # --------------------------------------------------
 
 function build_metaweb(meta, probabilistic::Bool)
-
     species = unique(vcat(meta.resource, meta.consumer))
     nodes = Unipartite(Symbol.(species))
 
@@ -55,7 +62,7 @@ function build_metaweb(meta, probabilistic::Bool)
     for j in 1:nrow(meta)
         interaction = (
             Symbol(meta.consumer[j]),
-            Symbol(meta.resource[j])
+            Symbol(meta.resource[j]),
         )
 
         if probabilistic
@@ -68,13 +75,64 @@ function build_metaweb(meta, probabilistic::Bool)
     return network
 end
 
+# Build each original metaweb once.
+metawebs = Dict(
+    loc.name => build_metaweb(loc.meta, loc.probabilistic_metaweb)
+    for loc in locations
+)
 
 # --------------------------------------------------
-# Run simulations for one parameter combination
+# Output DataFrames
+# --------------------------------------------------
+
+# Network objects and their metadata are kept together.
+function empty_network_df()
+    return DataFrame(
+        location = String[],
+        network_type = String[],
+        run = Int[],
+        Ropt = Union{Missing, Float64}[],
+        gamma = Union{Missing, Float64}[],
+        threshold = Union{Missing, Float64}[],
+        probabilistic_metaweb = Bool[],
+        is_original = Bool[],
+        network = Any[],
+    )
+end
+
+# The six groups saved to JLD2.
+CAN_metaweb = empty_network_df()
+GB_metaweb = empty_network_df()
+
+CAN_binary_atn = empty_network_df()
+GB_binary_atn = empty_network_df()
+
+CAN_probabilistic_atn = empty_network_df()
+GB_probabilistic_atn = empty_network_df()
+
+# Store each original metaweb once.
+push!(CAN_metaweb, (
+    "CAN", "metaweb", 0, missing, missing, missing,
+    true, true, metawebs["CAN"],
+))
+
+push!(GB_metaweb, (
+    "GB", "metaweb", 0, missing, missing, missing,
+    false, true, metawebs["GB"],
+))
+
+# --------------------------------------------------
+# Summary results
+# --------------------------------------------------
+
+all_results = DataFrame[]
+
+# --------------------------------------------------
+# Run simulations
 # --------------------------------------------------
 
 function run_analysis(
-    meta,
+    metaweb,
     body;
     location,
     n_runs = 100,
@@ -82,11 +140,10 @@ function run_analysis(
     atn_mode = :probabilistic,
     Ropt = 100.0,
     gamma = 2.0,
-    threshold = 0.01
+    threshold = 0.01,
+    network_results,
+    metaweb_results,
 )
-
-    metaweb = build_metaweb(meta, probabilistic_metaweb)
-
     results = DataFrame(
         location = String[],
         atn_mode = String[],
@@ -96,16 +153,32 @@ function run_analysis(
         threshold = Union{Missing, Float64}[],
         n_atn = Int[],
         n_forbidden = Int[],
-        forbidden_pct = Float64[]
+        forbidden_pct = Float64[],
     )
 
     for r in 1:n_runs
 
-        # Sample the metaweb if it is probabilistic
+        # Draw a metaweb for this run when the metaweb is probabilistic.
         sampled_metaweb = probabilistic_metaweb ?
             randomdraws(metaweb) : metaweb
 
-        # Identify producers, aligned to body.species
+        # Save each sampled metaweb alongside its run metadata.
+        # The fixed GB metaweb is already saved once above.
+        if probabilistic_metaweb
+            push!(metaweb_results, (
+                location,
+                "metaweb",
+                r,
+                Ropt,
+                gamma,
+                atn_mode == :binary ? threshold : missing,
+                probabilistic_metaweb,
+                false,
+                sampled_metaweb,
+            ))
+        end
+
+        # Identify producers from the sampled metaweb.
         gen = generality(sampled_metaweb)
 
         producer_lookup = Dict(
@@ -118,27 +191,26 @@ function run_analysis(
             for s in body.species
         ]
 
-        # Generate the ATN using the chosen parameters
+        # Generate the ATN.
         if atn_mode == :probabilistic
-
             A_atn = lmatrix(
                 body.species,
                 Float64.(body.bodymass),
                 is_producer;
                 Ropt = Ropt,
                 γ = gamma,
-                probabilistic = true
+                probabilistic = true,
             )
 
             atn = SpeciesInteractionNetwork(
                 Unipartite(Symbol.(body.species)),
-                Probabilistic(A_atn)
+                Probabilistic(A_atn),
             )
 
+            # Save the realised ATN, as in the original analysis.
             atn = randomdraws(atn)
 
         elseif atn_mode == :binary
-
             A_atn = lmatrix(
                 body.species,
                 Float64.(body.bodymass),
@@ -146,19 +218,32 @@ function run_analysis(
                 Ropt = Ropt,
                 γ = gamma,
                 threshold = threshold,
-                probabilistic = false
+                probabilistic = false,
             )
 
             atn = SpeciesInteractionNetwork(
                 Unipartite(Symbol.(body.species)),
-                Binary(Bool.(A_atn .!= 0))
+                Binary(Bool.(A_atn .!= 0)),
             )
 
         else
             error("Unknown ATN mode: $atn_mode")
         end
 
-        # Calculate forbidden interactions
+        # Save the ATN and its metadata in the appropriate DataFrame.
+        push!(network_results, (
+            location,
+            string(atn_mode),
+            r,
+            Ropt,
+            gamma,
+            atn_mode == :binary ? threshold : missing,
+            probabilistic_metaweb,
+            false,
+            atn,
+        ))
+
+        # Compare ATN interactions against the metaweb used in this run.
         atn_interactions = Set(interactions(atn))
         meta_interactions = Set(interactions(sampled_metaweb))
 
@@ -179,70 +264,105 @@ function run_analysis(
             atn_mode == :binary ? threshold : missing,
             n_atn,
             n_forbidden,
-            forbidden_pct
+            forbidden_pct,
         ))
     end
 
     return results
 end
 
-
 # --------------------------------------------------
-# Run parameter sensitivity analysis
+# Run the full parameter grid
 # --------------------------------------------------
 
-all_results = DataFrame[]
+total_combinations = length(locations) * (
+    length(Ropt_values) * length(gamma_values) +
+    length(Ropt_values) * length(gamma_values) *
+    length(threshold_values)
+)
 
 @showprogress "Running sensitivity analysis" for loc in locations
-    # A. Probabilistic ATN: vary Ropt and gamma
+
+    # Select the output DataFrames for this location.
+    if loc.name == "CAN"
+        metaweb_results = CAN_metaweb
+        binary_results = CAN_binary_atn
+        probabilistic_results = CAN_probabilistic_atn
+    else
+        metaweb_results = GB_metaweb
+        binary_results = GB_binary_atn
+        probabilistic_results = GB_probabilistic_atn
+    end
+
+    # Probabilistic ATNs.
     for Ropt in Ropt_values, gamma in gamma_values
         push!(all_results, run_analysis(
-            loc.meta, loc.body;
+            metawebs[loc.name],
+            loc.body;
             location = loc.name,
             n_runs = n_runs,
             probabilistic_metaweb = loc.probabilistic_metaweb,
             atn_mode = :probabilistic,
             Ropt = Ropt,
-            gamma = gamma
+            gamma = gamma,
+            network_results = probabilistic_results,
+            metaweb_results = metaweb_results,
         ))
     end
 
-    # B. Binary ATN: additionally vary threshold
+    # Binary ATNs.
     for Ropt in Ropt_values,
         gamma in gamma_values,
         threshold in threshold_values
+
         push!(all_results, run_analysis(
-            loc.meta, loc.body;
+            metawebs[loc.name],
+            loc.body;
             location = loc.name,
             n_runs = n_runs,
             probabilistic_metaweb = loc.probabilistic_metaweb,
             atn_mode = :binary,
             Ropt = Ropt,
             gamma = gamma,
-            threshold = threshold
+            threshold = threshold,
+            network_results = binary_results,
+            metaweb_results = metaweb_results,
         ))
     end
 end
+
+# --------------------------------------------------
+# Export summary CSVs
+# --------------------------------------------------
+
 results = vcat(all_results...)
 
-# Save all simulation-level results
 CSV.write("data/forbidden_interactions.csv", results)
-
-
-# --------------------------------------------------
-# Summarise sensitivity results
-# --------------------------------------------------
 
 summary = combine(
     groupby(
         results,
-        [:location, :atn_mode, :Ropt, :gamma, :threshold]
+        [:location, :atn_mode, :Ropt, :gamma, :threshold],
     ),
     :forbidden_pct => mean => :mean_forbidden_pct,
     :forbidden_pct => std => :sd_forbidden_pct,
     :forbidden_pct => median => :median_forbidden_pct,
     :forbidden_pct => minimum => :min_forbidden_pct,
-    :forbidden_pct => maximum => :max_forbidden_pct
+    :forbidden_pct => maximum => :max_forbidden_pct,
 )
 
 CSV.write("data/forbidden_summary.csv", summary)
+
+# --------------------------------------------------
+# Save all six network DataFrames to one JLD2 file
+# --------------------------------------------------
+
+JLD2.jldsave(
+    "data/networks.jld2";
+    CAN_metaweb,
+    GB_metaweb,
+    CAN_binary_atn,
+    GB_binary_atn,
+    CAN_probabilistic_atn,
+    GB_probabilistic_atn,
+)
