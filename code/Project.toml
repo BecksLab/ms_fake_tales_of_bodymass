@@ -1,0 +1,5 @@
+[deps]
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+FoodWebTools = "1f540cc9-11db-4f16-ba1b-35cbaf81ff1e"
+SpeciesInteractionNetworks = "49e116ef-912f-4766-9e56-896a49944adc"
