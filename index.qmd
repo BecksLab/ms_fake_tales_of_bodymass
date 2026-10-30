@@ -28,51 +28,66 @@ abstract: |
 bibliography: references.bib
 ---
 
-- Body-size-based allometric trophic network (ATN) [@broseConsumerResourceBodySize2006] models predict interactions from consumer–resource size relationships.
-- However, body size is only one determinant of trophic interactions; other traits and ecological constraints may be important.
-- **Aim:** quantify how often body-size-based ATN models predict interactions absent from empirical metawebs, and test whether network structure can nevertheless be recovered.
-- Prediction: ATN models will generate a high proportion of forbidden interactions, even when their broad structural properties resemble those of empirical metawebs.
+-   Body-size-based allometric trophic network (ATN) [@broseConsumerResourceBodySize2006] models predict interactions from consumer–resource size relationships.
+-   However, body size is only one determinant of trophic interactions; other traits and ecological constraints may be important.
+-   **Aim:** quantify how often body-size-based ATN models predict interactions absent from empirical metawebs, and test whether network structure can nevertheless be recovered.
+-   Prediction: ATN models will generate a high proportion of forbidden interactions, even when their broad structural properties resemble those of empirical metawebs.
 
-## Template metawebs
+# Simulations
 
-- **Great Britain:** European metaweb [@maioranoTETRAEU10Specieslevel2020a]; subsampled to mammal species checklist from the UK Mammal Society - this is because some of the links in the european metaweb are 'forbidden' due to co-occurrence limitations but could be feasible if species are treated as co-occurring. So this would have inflated the number of perceived forbidden links in the ATN. For Canada it is less of a problem since it is not constrained by co-occurrence.
-- **Canada:** probabilistic metaweb from @strydomFoodWebReconstruction2022.
-- **Body sizes:** mammalian body-mass estimates from PanTHERIA [@jonesPanTHERIASpecieslevelDatabase2009].
-- Briefly describe species matching, taxonomic harmonisation and missing-data handling.
+## Data sources and preparation
 
-## ATN models and forbidden interactions
+We analysed mammal food webs for Great Britain (GB) and Canada. For GB, we used the European metaweb from @maioranoTETRAEU10Specieslevel2020a, filtered to species on the UK Mammal Society checklist. This regional filtering was intended to avoid classifying interactions as forbidden solely to guard against interactions being excluded from the European metaweb on the basis of co-occurrence constraints. For Canada, we used the probabilistic metaweb of @strydomFoodWebReconstruction2022. Species names were harmonised using genus and species names, and both metawebs were restricted to species with positive adult body-mass estimates in PanTHERIA [@jonesPanTHERIASpecieslevelDatabase2009]. Although this resulted in species from the dataset the goal here is not to recover exact networks but to compare between network types. Interactions involving species without usable body-mass estimates were excluded. The resulting networks and species body masses were used as inputs to the ATN models and ensured that we had the same input species for both metawebs and ATN networks.
 
-- Generate probabilistic and binary ATN networks using body size, varying $(R_{\mathrm{opt}}), (\gamma)$ and, for binary networks, the interaction threshold.
-- For probabilistic metawebs, account for uncertainty by sampling interactions.
-- Define forbidden interactions as ATN links absent from the corresponding metaweb.
-- Quantify the percentage of ATN links that are forbidden across parameter combinations and simulation replicates.
+## ATN parameterisation
+
+We varied the parameters governing interaction strength and feeding relationships in the allometric trophic network (ATN) models to assess how parameter choice influenced forbidden-link predictions. For probabilistic ATNs, we varied the optimal predator–prey body-mass ratio ($R_{opt}$) from 50 to 200 in increments of 20, and the parameter ($\gamma$) from 0.5 to 5.5 in increments of 0.5. For binary ATNs, we varied the interaction-probability threshold from 0.001 to 0.1 across 10 evenly spaced values. Probabilistic ATNs were generated from the allometric interaction probabilities and converted to binary networks by random sampling; binary ATNs were generated using the specified threshold.
+
+We conducted 10 simulation runs for each parameter combination. In Canada, the probabilistic reference metaweb was also sampled to produce a binary metaweb for comparison. For each simulated ATN, we identified forbidden links as those predicted by the ATN but absent from the corresponding reference metaweb, and calculated the percentage of ATN links classified as forbidden.
+
+## Quantifying forbidden links
+
+Forbidden links were defined as ATN-predicted interactions absent from the reference metaweb. We calculated the percentage of forbidden links as the number of forbidden links divided by the total number of ATN links, multiplied by 100. For Canada, each ATN was compared with a sampled binary version of the probabilistic metaweb; for Great Britain, ATNs were compared with the fixed binary metaweb.
 
 ## Network structure comparison
 
-- Compare a small set of structural metrics between ATN networks and metawebs (e.g. connectance, degree distributions and nestedness, where appropriate).
-- Assess whether similar structural properties can coexist with poor recovery of specific species-level interactions.
+We compared network topology using the metrics below in @tbl-metrics, calculated for all networks. To compare differences in network structure, we calculated the difference between each ATN and its corresponding reference metaweb for each topological metric. Differences were calculated as ATN minus metaweb values, with positive and negative values indicating higher and lower metric values in the ATN, respectively. For Canada, each ATN was compared with its corresponding sub-sampled binary metaweb.
 
-## Body-size models predict many forbidden interactions
+| Metric | Definiton |
+|--------|-----------|
+| Connectance | Proportion of possible links realised ($L/S^2$).|
+| Complexity | SVD complexity, see @strydomSVDEntropyReveals2021|
+| Maximum trophic level | Maximum species trophic level in the network. |
+| Generality |Standard deviation of species generality, scaled by links per species ($L/S$)|
+| Vulnerability | Standard deviation of species vulnerability, scaled by links per species ($L/S$).|
+| Trophic Index (NDTI) | Normalised difference between the number of S1 (linear chains) and S2 (omnivory) motifs $(S1 - S2)/(S1 + S2)$, see @dansereauSpatiallyExplicitPredictions2024 |
+| Competition index (NDCI) | Normalised difference between the number of S4 (exploitative competition) and S5 (apparent competition) motifs $(S4 - S5)/(S4 + S5)$, see @dansereauSpatiallyExplicitPredictions2024 |
 
-- Report the percentage of predicted ATN links absent from the metaweb.
-- Show sensitivity to $(R_{\mathrm{opt}}), (\gamma)$, and the binary interaction threshold.
-- Compare results between Great Britain and Canada.
+: Look a table {#tbl-metrics}
 
-## Similar structure does not imply correct interactions
+# Body-size models predict many forbidden interactions
 
-- Compare structural metrics between ATN networks and metawebs.
-- Highlight any cases where structural similarity coexists with low pairwise interaction agreement.
+The proportion of ATN-predicted interactions absent from the reference metaweb varied substantially with model formulation and parameterisation. The lowest forbidden-link percentages for probabilistic ATNs were 39.5% in Great Britain and 40.6% in Canada, whereas the highest values reported for binary ATNs were 64.8% and 77.2%, respectively (panel A, @fig-forbidden). In both regions, the lowest forbidden-link percentages for probabilistic ATNs occurred at high values of $\gamma$, although the corresponding $R_{opt}$ differed (panel B @fig-forbidden). Thus, the parameter combinations associated with fewer predictions absent from the reference metaweb were not identical between regions. These results suggest that the representation of interaction probabilities and the parameterisation of body-mass constraints may strongly influence the set of interactions predicted by ATNs. Importantly however is that the percentage of forbidden links remains high.
+
+
+![**Sensitivity of ATN-predicted forbidden interactions to model parameterisation**. (**A**) Percentage of predicted ATN interactions absent from the reference metaweb ('forbidden links') across values of optimal predator–prey body-mass ratio ($R_{opt}$), the body-mass scaling parameter ($\gamma$), and the interaction-probability threshold. Lines show trends across parameter values, with results distinguished by region and ATN type; shaded bands indicate [95% confidence intervals / standard errors, as appropriate]. (**B**) Mean percentage of forbidden links in probabilistic ATNs across combinations of $R_{opt}$ and $\gamma$, with colour indicating the mean across simulation runs. For Canada, ATN predictions were compared with the corresponding sampled binary realisation of the probabilistic reference metaweb; for Great Britain, predictions were compared with the fixed binary reference metaweb. Forbidden-link percentage was calculated as the number of predicted links absent from the reference metaweb divided by the total number of predicted ATN links, multiplied by 100. Higher values indicate that a greater proportion of predicted interactions are absent from the reference metaweb.](figures/forbidden_links.png){#fig-forbidden}
+
+# Similar structure does not imply correct interactions
+
+-   Compare structural metrics between ATN networks and metawebs.
+-   Highlight any cases where structural similarity coexists with low pairwise interaction agreement.
+
+![Differences in network topology between probabilistic ATN simulations and their corresponding metawebs across values of optimal resource density ($R_{opt}$) and metabolic scaling exponent ($\gamma$) for Great Britain (GB) and Canada (CAN). Tiles show the mean standardised difference for seven network metrics: connectance, complexity, trophic level, generality, vulnerability, number of diet-trophic interactions (NDTI) and number of diet-competition interactions (NDCI). Differences were calculated as ATN minus metaweb values and standardised by the standard deviation of differences across simulation runs for each parameter combination. For GB, ATNs were compared with the fixed reference metaweb; for CAN, each ATN was compared with its corresponding sampled metaweb. Values around zero indicate smaller differences relative to the variability among runs, while positive and negative values indicate higher and lower ATN metric values, respectively, relative to the metaweb..](figures/strucutre.png){#fig-strucutre}
 
 # Discussion
 
-- Body-size-based ATN models can predict interactions that are unsupported by the reference metawebs.
-- Structural similarity, if observed, does not necessarily imply recovery of the correct species-level links.
-- Discuss the limitations of body size as a sole predictor and the potential importance of additional traits and ecological constraints.
-- Note that metaweb absence is not definitive proof that an interaction is biologically impossible; results measure disagreement with the reference interaction data.
+-   Body-size-based ATN models can predict interactions that are unsupported by the reference metawebs.
+-   Structural similarity, if observed, does not necessarily imply recovery of the correct species-level links.
+-   Discuss the limitations of body size as a sole predictor and the potential importance of additional traits and ecological constraints.
+-   Note that metaweb absence is not definitive proof that an interaction is biologically impossible; results measure disagreement with the reference interaction data.
 
 # Data and code availability
 
-- Provide data sources, analysis code and processed outputs.
-
+-   Provide data sources, analysis code and processed outputs.
 
 # References {.unnumbered}

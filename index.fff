@@ -1,0 +1,56 @@
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{figures/forbidden_links.png}}
+
+}
+
+\caption{\label{fig-forbidden}\textbf{Sensitivity of ATN-predicted
+forbidden interactions to model parameterisation}. (\textbf{A})
+Percentage of predicted ATN interactions absent from the reference
+metaweb (`forbidden links') across values of optimal predator--prey
+body-mass ratio (\(R_{opt}\)), the body-mass scaling parameter
+(\(\gamma\)), and the interaction-probability threshold. Lines show
+trends across parameter values, with results distinguished by region and
+ATN type; shaded bands indicate {[}95\% confidence intervals / standard
+errors, as appropriate{]}. (\textbf{B}) Mean percentage of forbidden
+links in probabilistic ATNs across combinations of \(R_{opt}\) and
+\(\gamma\), with colour indicating the mean across simulation runs. For
+Canada, ATN predictions were compared with the corresponding sampled
+binary realisation of the probabilistic reference metaweb; for Great
+Britain, predictions were compared with the fixed binary reference
+metaweb. Forbidden-link percentage was calculated as the number of
+predicted links absent from the reference metaweb divided by the total
+number of predicted ATN links, multiplied by 100. Higher values indicate
+that a greater proportion of predicted interactions are absent from the
+reference metaweb.}
+
+\end{figure}
+\efloatseparator
+ 
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{figures/strucutre.png}}
+
+}
+
+\caption{\label{fig-strucutre}Differences in network topology between
+probabilistic ATN simulations and their corresponding metawebs across
+values of optimal resource density (\(R_{opt}\)) and metabolic scaling
+exponent (\(\gamma\)) for Great Britain (GB) and Canada (CAN). Tiles
+show the mean standardised difference for seven network metrics:
+connectance, complexity, trophic level, generality, vulnerability,
+number of diet-trophic interactions (NDTI) and number of
+diet-competition interactions (NDCI). Differences were calculated as ATN
+minus metaweb values and standardised by the standard deviation of
+differences across simulation runs for each parameter combination. For
+GB, ATNs were compared with the fixed reference metaweb; for CAN, each
+ATN was compared with its corresponding sampled metaweb. Values around
+zero indicate smaller differences relative to the variability among
+runs, while positive and negative values indicate higher and lower ATN
+metric values, respectively, relative to the metaweb..}
+
+\end{figure}
