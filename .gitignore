@@ -54,3 +54,4 @@ docs/
 .positai
 .RDataTmp
 **/*.quarto_ipynb
+code/data/networks.jld2
